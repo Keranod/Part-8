@@ -61,51 +61,30 @@ const typeDefs = `
 
 const resolvers = {
   Query: {
-    bookCount: () => books.length,
-    authorCount: () => authors.length,
-    allBooks: (root, args) => {
-        let allBooksQuery = [...books]
-        
-        if (args.author) {
-            const author = args.author
-
-            const booksByAuthor = allBooksQuery.filter(book => book.author === author)
-
-            allBooksQuery = booksByAuthor
-        }
-
-        if (args.genre) {
+    bookCount: async () => {
+      return await Book.countDocuments()
+    },
+    authorCount: async () => {
+      return await Author.countDocuments()
+    },
+    allBooks: async (root, args) => {
+      let allBooksQuery = null  
+      
+      if (args.genre) {
             const genre = args.genre
 
-            const booksByGenre = allBooksQuery.filter(book => book.genres.includes(genre))
+            const booksByGenre = Book.find({ genres: genre })
 
             allBooksQuery = booksByGenre
+        } else {
+          allBooksQuery = Book.find()
         }
-
+        
         return allBooksQuery
     },
-    allAuthors: () => {
-        const allAuthors = authors.map(author => {
-            let booksCount = 0
-            books.forEach(book => {
-                if (book.author === author.name) {
-                    booksCount++
-                }
-            })
+    allAuthors: async () => {
+      const allAuthors = await Author.find()
 
-            const authorObject = {
-                name: author.name,
-                bookCount: booksCount
-            }
-
-            if (!author.born) {
-                authorObject.born = null
-            } else {
-                authorObject.born = author.born
-            }
-
-            return authorObject
-        })
         return allAuthors
     }
   },
@@ -148,14 +127,26 @@ const resolvers = {
 
         return book
     },
-    editAuthor: (root, args) => {
-        const author = authors.find(author => author.name === args.name)
-        if (!author) {
+    editAuthor: async (root, args) => {
+        const result = await Author.find({ name: args.name})
+        if (result.length === 0) {
             return null
         }
+        const author = result[0]
+        const updatedAuthor = new Author({ name: author.name, born: args.setBornTo, _id: author.id })
 
-        const updatedAuthor = { ...author, born: args.setBornTo }
-        authors = authors.map(author => author.name === args.name ? updatedAuthor : author)
+        try {
+          await Author.findByIdAndUpdate(author.id, updatedAuthor)
+        } catch(error) {
+          throw new GraphQLError('Modyfing author failed', {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              invalidArgs: args.name,
+              error
+            }
+          })
+        }
+
         return updatedAuthor
     }
   }
