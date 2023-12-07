@@ -1,10 +1,13 @@
+import { useApolloClient } from '@apollo/client'
 import { useState } from 'react'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 
 const App = () => {
+  const [token, setToken] = useState(null)
   const [page, setPage] = useState('authors')
+  const client = useApolloClient()
 
   return (
     <div>
