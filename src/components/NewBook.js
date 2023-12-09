@@ -25,8 +25,13 @@ const NewBook = (props) => {
 
     const publishedInt = parseInt(published)
 
-    addBook({ variables: { title, author, published: publishedInt, genres } })
-
+    try {
+      await addBook({ variables: { title, author, published: publishedInt, genres } })
+    }
+    catch (error) {
+      console.log(error.message)
+    }
+    
     setTitle('')
     setPublished('')
     setAuthor('')

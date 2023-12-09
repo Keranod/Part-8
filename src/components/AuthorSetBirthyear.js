@@ -31,6 +31,7 @@ const AuthorSetBirthyear = ({ authors }) => {
                 <select name="selectedAuthor"
                     onChange={({ target }) => setSelectedAuthor(target.value)}
                 >
+                    <option value="">choose author</option>
                     {authors.map((a) => (
                         <option key={a.name} value={a.name}>{a.name}</option>
                     ))}
