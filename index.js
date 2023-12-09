@@ -90,19 +90,34 @@ const resolvers = {
       return await Author.countDocuments()
     },
     allBooks: async (root, args) => {
-      let allBooksQuery = null  
-      
-      if (args.genre) {
-            const genre = args.genre
-
-            const booksByGenre = Book.find({ genres: genre })
-
-            allBooksQuery = booksByGenre
+      try {
+        let allBooksQuery = null
+    
+        if (args.genre) {
+          const genre = args.genre
+          const booksByGenre = await Book.find({ genres: genre })
+          allBooksQuery = booksByGenre
         } else {
-          allBooksQuery = Book.find()
+          allBooksQuery = await Book.find()
         }
-        
-        return allBooksQuery
+    
+        const booksWithAuthors = await Promise.all(
+          allBooksQuery.map(async (book) => {
+            const author = await Author.findById(book.author)
+            return {
+              title: book.title,
+              published: book.published,
+              genres: book.genres,
+              author: author ? { name: author.name } : null,
+            };
+          })
+        );
+    
+        return booksWithAuthors
+      } catch (error) {
+        console.error("Error in allBooks resolver:", error)
+        throw new Error("Internal server error")
+      }
     },
     allAuthors: async () => {
       const allAuthors = await Author.find()
