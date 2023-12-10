@@ -47,8 +47,20 @@ const resolvers = {
       },
       allAuthors: async () => {
         const allAuthors = await Author.find()
-  
-          return allAuthors
+        const allBooks = await Book.find()
+
+        const authorBookCounts = allAuthors.reduce((counts, author) => {
+          const authorBookCount = allBooks.filter(book => book.author.toString() === author._id.toString()).length
+          
+          counts.push({
+            ...author.toObject(),
+            bookCount: authorBookCount,
+          })
+    
+          return counts
+        }, [])
+    
+        return authorBookCounts
       },
       me: (root, args, context) => {
         return context.currentUser

@@ -31,6 +31,8 @@ mongoose.connect(MONGODB_URI)
     console.log('error connection to MongoDB:', error.message)
   })
 
+  // to solve n+1 problem, debugging option
+  mongoose.set('debug', true)
 
 const start = async () => {
   const app = express()
