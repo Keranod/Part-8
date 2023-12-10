@@ -10,10 +10,11 @@ const NewBook = (props) => {
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
 
-  const { refetch } = useQuery(ALL_BOOKS)
-
   const [ addBook ] = useMutation(ADD_BOOK, {
-    onCompleted: () => refetch()
+    refetchQueries: () => [{
+      query: ALL_BOOKS,
+      variables: { genre: "" }
+    }]
   })
 
   if (!props.show) {
